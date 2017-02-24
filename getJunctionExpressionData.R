@@ -63,7 +63,7 @@ rownames(phenotype_labels) <- phenotype$run
 phenotype_labels$char <- tolower(phenotype_labels$char)
 phenotype_labels$char <- gsub(paste(".*", pheno_keyword, ":", sep=""), "", phenotype_labels$char)
 phenotype_labels$char <- gsub("(,|\\)$).*", "", phenotype_labels$char)
-phenotype_labels <- transform(phenotype_labels, char = as.integer(factor(char, unique(char))))
+phenotype_labels <- transform(phenotype_labels, char = as.integer(factor(char, unique(char))))-1
 
 gene_counts <- log(gene_counts+1)
 gc_row_sums <- rowSums(gene_counts)
@@ -90,6 +90,6 @@ junction_counts_filtered <- junction_counts[-which(jc_row_sum==1),]
 gene_counts_random <-gene_counts_pca$x[,1:50]
 junction_counts_random <- junction_counts[sample(nrow(junction_counts), 2000),]
 
-save(gene_counts_random, junction_counts_filtered, phenotype_labels, file = "Christian_total.RData")
+save(gene_counts_random, junction_counts_filtered, phenotype_labels, file = "Christian.RData")
 
 print("RData generated!")
