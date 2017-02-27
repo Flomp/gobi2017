@@ -1,11 +1,12 @@
 library(randomForest)
-
+library(rgl)
+library(stats)
 ### Random-Forest gehoert zu Bagging (Datensaetze mit Bootstrap-Stichproben, weniger Overfitting, Varianzreduzierung, ohne Einteilung Training - Test)
 # Formel, abhaengigkeit des Ergebnissen von allen Features
 # Greedy-Algo
 # am besten RF mehrfach ausfuehren
 
-gene_count_rf <- data.frame(outcome = as.character(phenotype_labels[,1]), data.matrix(gene_counts_random))
+gene_count_rf <- data.frame(outcome = as.character(phenotype_labels[,1]), data.matrix(gc_pca))
 junction_count_rf <- data.frame(outcome2 = as.character(phenotype_labels[,1]), t(data.matrix(junction_counts_random)))
 
 ####### RF fuer Genes
