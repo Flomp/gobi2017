@@ -1,6 +1,6 @@
 library(stats)
-project_accession <- "SRP019994"
-pheno_keyword <- "subtypes"
+project_accession <- "SRP042161"
+pheno_keyword <- "subtype"
 
 ##############################
 ##########Download############
@@ -80,7 +80,10 @@ abline(v = quantile(gc_row_sums, 0.10),
        lwd = 2)
 
 #Filter unsignificant entries with PCA
-gene_counts_filtered <- gene_counts[-which(gc_row_sums==0),]
+if(length(which(gc_row_sums==0))!=0){
+  gene_counts_filtered <- gene_counts[-which(gc_row_sums==0),]
+}
+
 gene_counts_filtered <- t(gene_counts_filtered)
 gene_counts_pca <- prcomp(gene_counts_filtered, center = TRUE, scale = FALSE)
 
@@ -91,6 +94,6 @@ junction_counts_filtered <- junction_counts[-which(jc_row_sum==1),]
 gene_counts_random <-gene_counts_pca$x[,1:50]
 junction_counts_random <- junction_counts[sample(nrow(junction_counts), 2000),]
 
-save(gene_counts_random, junction_counts_filtered, phenotype_labels, file = "Christian.RData")
+save(gene_counts_random, junction_counts_filtered, phenotype_labels, file = "SRP042161.RData")
 
 print("RData generated!")
