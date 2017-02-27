@@ -97,7 +97,15 @@ h2o.init(nthreads = -1)
 gene_counts.hex <- as.h2o(gene_counts, destination_frame="gene_counts.hex")
 junction_counts.hex <- as.h2o(junction_counts, destination_frame="junction_counts.hex")
 phenotype_labels.hex <- as.h2o(phenotype_labels, destination_frame="phenotype_labels.hex")
-#summary(apply(phenotype_labels.hex, 2, sum))
+
+
+
+## Summary
+h2o.describe(gene_counts_hex)
+h2o.describe(junction_counts_hex)
+
+## plot 
+h2o.hist()
 
 model <- h2o.deeplearning(x = phenotype_labels.hex,  #A vector containing the names of the predictors in the model
                           y = phenotype_labels.hex,   # column number for label
@@ -109,22 +117,6 @@ model <- h2o.deeplearning(x = phenotype_labels.hex,  #A vector containing the na
                           hidden = c(50,50,50), # three layers of 50 nodes
                           epochs = 100) # max. no. of epochs
 
-##Define data path
-base_path = normalizePath("~/LMU/Binf/gobi/Blockteil")
-gene_counts_path = paste0(base_path, "/")
-junction_counts_path = paste0(base_path, "/")
-
-
-gene_counts_hex <- h2o.importFile(PATH = gene_counts_path, destination_frame = "gene_counts_hex")
-junction_counts_hex <- h2o.importFile(PATH = junction_counts_path, destination_frame = "junction_counts_hex")
-
-
-## Summary
-h2o.describe(gene_counts_hex)
-h2o.describe(junction_counts_hex)
-
-## plot 
-h2o.hist()
 
 
 RunPredictions <- function(dat){
