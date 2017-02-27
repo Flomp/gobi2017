@@ -1,12 +1,10 @@
 library(rgl)
 library(stats)
-<<<<<<< HEAD
-project_accession <- "SRP010181"
-pheno_keyword <- "subtype"
+
 =======
 project_accession <- "SRP019994"
 pheno_keyword <- "subtypes"
->>>>>>> origin/master
+
 
 ##############################
 ##########Download############
@@ -83,14 +81,9 @@ abline(v = quantile(gc_row_sums, 0.10),
        lwd = 2)
 print("Performing PCA...")
 
-<<<<<<< HEAD
-#Filter unsignificant entries with PCA
 
-gene_counts_filtered <- gene_counts[!(gc_row_sums==0),]
-=======
 #Reduce dimensions with PCA
 gene_counts_filtered <- gene_counts[!gc_row_sums==0,]
->>>>>>> origin/master
 gene_counts_filtered <- t(gene_counts_filtered)
 gene_counts_pca <- prcomp(gene_counts_filtered, center = TRUE, scale = FALSE)
 plot (gene_counts_pca, type="l")
@@ -101,7 +94,8 @@ junction_counts_filtered <- junction_counts[rowSums(junction_counts>5)>(0.5*ncol
 #Take random subsample
 junction_counts_random <- junction_counts[sample(nrow(junction_counts), 5000),]
 junction_counts_random <- junction_counts_random[rowSums(junction_counts_random)!=0,]
-save(gene_counts_pca$x, junction_counts_filtered, phenotype_labels, file = "Christian.RData")
+gc_pca <-gene_counts_pca$x
+save(gc_pca, junction_counts_filtered, phenotype_labels, file = paste(project_accession, ".RData", sep = ""))
 
 print("RData generated!")
 
