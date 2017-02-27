@@ -1,6 +1,12 @@
+library(rgl)
 library(stats)
+<<<<<<< HEAD
 project_accession <- "SRP010181"
 pheno_keyword <- "subtype"
+=======
+project_accession <- "SRP019994"
+pheno_keyword <- "subtypes"
+>>>>>>> origin/master
 
 ##############################
 ##########Download############
@@ -65,7 +71,6 @@ phenotype_labels <- transform(phenotype_labels, char = as.integer(factor(char, u
 
 gene_counts <- log(gene_counts+1)
 gc_row_sums <- rowSums(gene_counts)
-
 hist(gc_row_sums, breaks=seq(from=0, to=max(gc_row_sums)+20, by=1))
 abline(v = median(gc_row_sums),
        col = "red",
@@ -76,20 +81,36 @@ abline(v = mean(gc_row_sums),
 abline(v = quantile(gc_row_sums, 0.10),
        col = "blue",
        lwd = 2)
+print("Performing PCA...")
 
+<<<<<<< HEAD
 #Filter unsignificant entries with PCA
 
 gene_counts_filtered <- gene_counts[!(gc_row_sums==0),]
+=======
+#Reduce dimensions with PCA
+gene_counts_filtered <- gene_counts[!gc_row_sums==0,]
+>>>>>>> origin/master
 gene_counts_filtered <- t(gene_counts_filtered)
 gene_counts_pca <- prcomp(gene_counts_filtered, center = TRUE, scale = FALSE)
+plot (gene_counts_pca, type="l")
 
-jc_row_sum <- unname(rowSums(junction_counts))
-junction_counts_filtered <- junction_counts[-which(jc_row_sum==1),]
+#jc_row_sum <- unname(rowSums(junction_counts))
+junction_counts_filtered <- junction_counts[rowSums(junction_counts>5)>(0.5*ncol(junction_counts)),]
 
 #Take random subsample
-gene_counts_random <-gene_counts_pca$x[,1:50]
-junction_counts_random <- junction_counts[sample(nrow(junction_counts), 2000),]
-
-save(gene_counts_random, junction_counts_filtered, phenotype_labels, file = "SRP042161.RData")
+junction_counts_random <- junction_counts[sample(nrow(junction_counts), 5000),]
+junction_counts_random <- junction_counts_random[rowSums(junction_counts_random)!=0,]
+save(gene_counts_pca$x, junction_counts_filtered, phenotype_labels, file = "Christian.RData")
 
 print("RData generated!")
+
+write.csv(gene_counts_pca$x, file="gc_python.csv", row.names = FALSE)
+write.csv(t(junction_counts_filtered), file="jc_python.csv", row.names=FALSE)
+write.csv(phenotype_labels$char, file="labels_python.csv", row.names=FALSE)
+
+
+temp <- data.frame(scale(gene_counts_pca$x[,1:3]))
+plot3d(temp$PC1, temp$PC2, temp$PC3, col=phenotype_labels$char+1)
+gc_cluster <- kmeans(gene_counts_pca$x[,1:3], length(unique(phenotype_labels)[,1]), nstart=20)
+table(gc_cluster$cluster, phenotype_labels[,1])
