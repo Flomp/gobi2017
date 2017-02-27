@@ -35,9 +35,7 @@ if(!file.exists(filename)){
               quiet = FALSE, mode = "w", cacheOK = TRUE)
 }
 phenotype <- read.table(file = filename, sep = '\t', header = TRUE)
-if(length(which(phenotype$reads_downloaded==0))!=0){
-  phenotype <- phenotype[-which(phenotype$reads_downloaded==0),]
-}
+phenotype <- phenotype[!(phenotype$reads_downloaded==0),]
 
 
 ### Junction Positions
@@ -80,10 +78,8 @@ abline(v = quantile(gc_row_sums, 0.10),
        lwd = 2)
 
 #Filter unsignificant entries with PCA
-if(length(which(gc_row_sums==0))!=0){
-  gene_counts_filtered <- gene_counts[-which(gc_row_sums==0),]
-}
 
+gene_counts_filtered <- gene_counts[!(gc_row_sums==0),]
 gene_counts_filtered <- t(gene_counts_filtered)
 gene_counts_pca <- prcomp(gene_counts_filtered, center = TRUE, scale = FALSE)
 
