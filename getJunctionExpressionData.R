@@ -67,6 +67,7 @@ phenotype_labels <- transform(phenotype_labels, char = as.integer(factor(char, u
 
 gene_counts <- log(gene_counts+1)
 gc_row_sums <- rowSums(gene_counts)
+
 hist(gc_row_sums, breaks=seq(from=0, to=max(gc_row_sums)+20, by=1))
 abline(v = median(gc_row_sums),
        col = "red",
