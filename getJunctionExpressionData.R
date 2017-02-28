@@ -1,10 +1,7 @@
 library(rgl)
 library(stats)
-
-=======
-project_accession <- "SRP019994"
-pheno_keyword <- "subtypes"
-
+project_accession <- "SRP066834"
+pheno_keyword <- "tissue"
 
 ##############################
 ##########Download############
@@ -39,7 +36,9 @@ if(!file.exists(filename)){
               quiet = FALSE, mode = "w", cacheOK = TRUE)
 }
 phenotype <- read.table(file = filename, sep = '\t', header = TRUE)
-phenotype <- phenotype[!(phenotype$reads_downloaded==0),]
+phenotype <- phenotype[!phenotype$reads_downloaded==0,]
+phenotype <- phenotype[!is.na(phenotype$auc),]
+
 
 
 ### Junction Positions
@@ -81,7 +80,6 @@ abline(v = quantile(gc_row_sums, 0.10),
        lwd = 2)
 print("Performing PCA...")
 
-
 #Reduce dimensions with PCA
 gene_counts_filtered <- gene_counts[!gc_row_sums==0,]
 gene_counts_filtered <- t(gene_counts_filtered)
@@ -89,19 +87,19 @@ gene_counts_pca <- prcomp(gene_counts_filtered, center = TRUE, scale = FALSE)
 plot (gene_counts_pca, type="l")
 
 #jc_row_sum <- unname(rowSums(junction_counts))
-junction_counts_filtered <- junction_counts[rowSums(junction_counts>5)>(0.5*ncol(junction_counts)),]
+junction_counts_filtered <- junction_counts[rowSums(junction_counts>5)>(0.2*ncol(junction_counts)),]
 
 #Take random subsample
 junction_counts_random <- junction_counts[sample(nrow(junction_counts), 5000),]
 junction_counts_random <- junction_counts_random[rowSums(junction_counts_random)!=0,]
-gc_pca <-gene_counts_pca$x
-save(gc_pca, junction_counts_filtered, phenotype_labels, file = paste(project_accession, ".RData", sep = ""))
+save(gene_counts_pca$x, junction_counts_filtered, phenotype_labels, file = "Christian.RData")
 
 print("RData generated!")
 
-write.csv(gene_counts_pca$x, file="gc_python.csv", row.names = FALSE)
-write.csv(t(junction_counts_filtered), file="jc_python.csv", row.names=FALSE)
-write.csv(phenotype_labels$char, file="labels_python.csv", row.names=FALSE)
+filename <- paste(project_accession, "_python", ".csv", sep="")
+write.csv(gene_counts_pca$x, file=paste("gc_", filename, sep=""), row.names = FALSE)
+write.csv(t(junction_counts_filtered), file=paste("jc_", filename, sep=""), row.names=FALSE)
+write.csv(phenotype_labels$char, file=paste("labels_", filename, sep=""), row.names=FALSE)
 
 
 temp <- data.frame(scale(gene_counts_pca$x[,1:3]))
