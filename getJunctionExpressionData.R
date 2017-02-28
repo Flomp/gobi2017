@@ -1,6 +1,6 @@
 library(rgl)
 library(stats)
-project_accession <- "SRP066834"
+project_accession <- "SRP055569"
 pheno_keyword <- "tissue"
 
 ##############################
@@ -68,6 +68,7 @@ phenotype_labels <- transform(phenotype_labels, char = as.integer(factor(char, u
 
 gene_counts <- log(gene_counts+1)
 gc_row_sums <- rowSums(gene_counts)
+junction_counts <- log(junction_counts+1)
 hist(gc_row_sums, breaks=seq(from=0, to=max(gc_row_sums)+20, by=1))
 abline(v = median(gc_row_sums),
        col = "red",
@@ -87,18 +88,20 @@ gene_counts_pca <- prcomp(gene_counts_filtered, center = TRUE, scale = FALSE)
 plot (gene_counts_pca, type="l")
 
 #jc_row_sum <- unname(rowSums(junction_counts))
-junction_counts_filtered <- junction_counts[rowSums(junction_counts>5)>(0.2*ncol(junction_counts)),]
+#junction_counts_filtered <- junction_counts[rowSums(junction_counts>5)>(0.2*ncol(junction_counts)),]
+junction_counts_pca <- t(junction_counts)
+junction_counts_pca <- prcomp(junction_counts_pca, center = TRUE, scale = FALSE)
 
 #Take random subsample
-junction_counts_random <- junction_counts[sample(nrow(junction_counts), 5000),]
-junction_counts_random <- junction_counts_random[rowSums(junction_counts_random)!=0,]
-save(gene_counts_pca$x, junction_counts_filtered, phenotype_labels, file = "Christian.RData")
+
+#gc_pca <- gene_counts_pca$x
+#save(gc_pca, junction_counts_filtered, phenotype_labels, file = paste(project_accession, ".RData", sep = ""))
 
 print("RData generated!")
 
 filename <- paste(project_accession, "_python", ".csv", sep="")
 write.csv(gene_counts_pca$x, file=paste("gc_", filename, sep=""), row.names = FALSE)
-write.csv(t(junction_counts_filtered), file=paste("jc_", filename, sep=""), row.names=FALSE)
+write.csv(junction_counts_pca$x, file=paste("jc_", filename, sep=""), row.names=FALSE)
 write.csv(phenotype_labels$char, file=paste("labels_", filename, sep=""), row.names=FALSE)
 
 
