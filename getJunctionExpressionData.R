@@ -79,33 +79,40 @@ junction_counts <- log(junction_counts+1)
 
 # Reduce dimension gene_counts
 gene_counts_filtered <- gene_counts[!gc_row_sums==0,]
- 
-gc_means <- apply(gene_counts_filtered,1,mean) 
-gc_sds <- apply(gene_counts_filtered,1,sd) 
-gc_ok <- which(gc_means > 1) 
-gene_counts_filtered <- gene_counts_filtered[gc_ok,]
+Filter<-function(dat, threshhold){
+  gc_means <- apply(dat,1,mean) 
+  gc_sds <- apply(dat,1,sd) 
+  gc_ok <- gc_means>threshhold
+  dat <- dat[gc_ok,]
 
-gc_means_ok <- gc_means[gc_ok] 
-gc_sds_ok<-gc_sds[gc_ok] 
-gc_cv <- sqrt(gc_sds_ok/gc_means_ok)
-gc_afit<-loess(gc_cv~gc_means_ok) 
-gc_resids<-gc_afit$residuals
-plot(density(gc_resids)) 
-good<-which(gc_resids >= quantile(gc_resids,0.95) | gc_resids <= -1*quantile(gc_resids,0.95 )) 
-gene_counts_filtered <- gene_counts_filtered[good,]
+  gc_means_ok <- gc_means[gc_ok] 
+  gc_sds_ok<-gc_sds[gc_ok] 
+  gc_cv <- sqrt(gc_sds_ok/gc_means_ok)
+  gc_afit<-loess(gc_cv~gc_means_ok) 
+  gc_resids<-gc_afit$residuals
+  plot(density(gc_resids))
+  good<-which(gc_resids >= quantile(gc_resids,0.95) | gc_resids <= -1*quantile(gc_resids,0.95 )) 
+  dat <- dat[good,]
+  
+  #plots
+  points(gc_means_ok[good],gc_cv[good],col="red",pch=19) 
+  scatter.smooth(gc_means_ok,gc_cv, lpars = list(col = "blue", lwd = 3, lty = 2))
+  return (dat)
+}
 
-#plots
-scatter.smooth(gc_means_ok,gc_cv, lpars = list(col = "blue", lwd = 3, lty = 2))
-points(gc_means_ok[good],gc_cv[good],col="red",pch=19) 
+gene_counts_filtered <- Filter(gene_counts_filtered, 1)
+junction_counts_filtered <- Filter(junction_counts, 0.1)
 
-##unlogged
-#gene_counts_filtered_ul <- gene_counts_unlogged[!gc_row_sums==0,]
-#gene_counts_filtered_stat_ul <- gene_counts_filtered_ul
+gene_counts_unlogged_filtered <- Filter(gene_counts_unlogged,1)
+junction_counts_unlogged_filtered <- Filter(junction_counts_unlogged,0.1)
 
 
-##################################
-# Reduce dimension junction_counts
-junction_counts_filtered_stat <- junction_counts
+###########Write data for deep net###########
+filename <- paste(project_accession, "_python", ".csv", sep="")
+write.csv(t(gene_counts_unlogged_filtered), file=paste("gc_", filename, sep=""), row.names = FALSE)
+write.csv(t(junction_counts_unlogged_filtered), file=paste("jc_", filename, sep=""), row.names=FALSE)
+write.csv(phenotype_labels$char, file=paste("labels_", filename, sep=""), row.names=FALSE)
+
 
 ################################
 #####Reduce dimensions with PCA
@@ -115,7 +122,7 @@ print("Performing PCA...")
 
 gene_counts_filtered <- t(gene_counts_filtered)
 gene_counts_pca <- prcomp(gene_counts_filtered, center = TRUE, scale = FALSE)
-plot (gene_counts_pca, type="l")
+#plot (gene_counts_pca, type="l")
 
 
 #junction_counts_filtered <- junction_counts[rowSums(junction_counts>5)>(0.2*ncol(junction_counts)),]
@@ -123,20 +130,5 @@ junction_counts_pca <- t(junction_counts)
 junction_counts_pca <- prcomp(junction_counts_pca, center = TRUE, scale = FALSE)
 
 
-#Take random subsample
-
-#gc_pca <- gene_counts_pca$x
-#save(gc_pca, junction_counts_filtered, phenotype_labels, file = paste(project_accession, ".RData", sep = ""))
-
-#print("RData generated!")
-
-filename <- paste(project_accession, "_python", ".csv", sep="")
-write.csv(gene_counts_pca$x, file=paste("gc_", filename, sep=""), row.names = FALSE)
-write.csv(junction_counts_pca$x, file=paste("jc_", filename, sep=""), row.names=FALSE)
-write.csv(phenotype_labels$char, file=paste("labels_", filename, sep=""), row.names=FALSE)
 
 
-temp <- data.frame(scale(gene_counts_pca$x[,1:3]))
-plot3d(temp$PC1, temp$PC2, temp$PC3, col=phenotype_labels$char+1)
-gc_cluster <- kmeans(gene_counts_pca$x[,1:3], length(unique(phenotype_labels)[,1]), nstart=20)
-table(gc_cluster$cluster, phenotype_labels[,1])
