@@ -78,28 +78,25 @@ junction_counts <- log(junction_counts+1)
 #jc_row_sum <- unname(rowSums(junction_counts))
 
 # Reduce dimension gene_counts
-gene_counts_filtered <- data.matrix(gene_counts[!gc_row_sums==0,])
-
+gene_counts_filtered <- gene_counts[!gc_row_sums==0,]
+ 
 gc_means <- apply(gene_counts_filtered,1,mean) 
 gc_sds <- apply(gene_counts_filtered,1,sd) 
-
-
 gc_ok <- which(gc_means > 1) 
+gene_counts_filtered <- gene_counts_filtered[gc_ok,]
+
 gc_means_ok <- gc_means[gc_ok] 
 gc_sds_ok<-gc_sds[gc_ok] 
-gc_cv <- gc_sds_ok/gc_means_ok
-plot(gc_means_ok, gc_cv) 
-plot(gc_means_ok,gc_sds_ok/gc_means_ok) 
-plot(gc_means_ok,sqrt(gc_sds_ok/gc_means_ok)) 
-gc_afit<-loess(sqrt(gc_sds_ok/gc_means_ok)~gc_means_ok) 
+gc_cv <- sqrt(gc_sds_ok/gc_means_ok)
+gc_afit<-loess(gc_cv~gc_means_ok) 
 gc_resids<-gc_afit$residuals
 plot(density(gc_resids)) 
-good<-which(gc_resids > 0.1) 
+good<-which(gc_resids >= quantile(gc_resids,0.95) | gc_resids <= -1*quantile(gc_resids,0.95 )) 
+gene_counts_filtered <- gene_counts_filtered[good,]
 
 #plots
-scatter.smooth(gc_means_ok,sqrt(gc_sds_ok/gc_means_ok), lpars =
-                 list(col = "blue", lwd = 3, lty = 2))
-points(gc_means_ok[good],sqrt(gc_sds_ok[good]/gc_means_ok[good]),col="red",pch=19) 
+scatter.smooth(gc_means_ok,gc_cv, lpars = list(col = "blue", lwd = 3, lty = 2))
+points(gc_means_ok[good],gc_cv[good],col="red",pch=19) 
 
 ##unlogged
 #gene_counts_filtered_ul <- gene_counts_unlogged[!gc_row_sums==0,]
