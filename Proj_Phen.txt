@@ -1,0 +1,23 @@
+project_accession <- "SRP042161"
+pheno_keyword <- "cell type"
+
+project_accession <- "SRP055569"
+pheno_keyword <- "cell type"
+
+project_accession <- "SRP057500"
+pheno_keyword <- "cancer type"
+
+project_accession <- "SRP032775"
+pheno_keyword <- "infectious agent"
+Einschränkung: junction_counts_filtered <- junction_counts[rowSums(junction_counts>20)>(0.9*ncol(junction_counts)),]
+
+project_accession <- "SRP059039"
+pheno_keyword <- "group"
+
+project_accession <- "SRP019994"
+pheno_keyword <- "subtypes"
+Einschränkung: junction_counts_filtered <- junction_counts[rowSums(junction_counts>4)>(0.2*ncol(junction_counts)),]
+
+project_accession <- "SRP066834"
+pheno_keyword <- "tissue"
+
