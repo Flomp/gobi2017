@@ -2,6 +2,7 @@ library(rgl)
 library(stats)
 library(raster)
 library(openxlsx)
+library(ggplot2)
 project_accession <- "SRP019994"
 pheno_keyword <- "subtypes"
 
@@ -76,29 +77,29 @@ gc_row_sums <- rowSums(gene_counts)
 junction_counts <- log(junction_counts+1)
 #jc_row_sum <- unname(rowSums(junction_counts))
 
-hist(gc_row_sums, breaks=seq(from=0, to=max(gc_row_sums)+20, by=1))
-abline(v = median(gc_row_sums),
-       col = "red",
-       lwd = 2)
-abline(v = mean(gc_row_sums),
-       col = "green",
-       lwd = 2)
-abline(v = quantile(gc_row_sums, 0.10),
-       col = "blue",
-       lwd = 2)
-
-
 # Reduce dimension gene_counts
-gene_counts_filtered <- gene_counts[!gc_row_sums==0,]
-gene_counts_filtered_stat <- gene_counts_filtered
-gene_counts_filtered_stat$mean <- apply(gene_counts_filtered, 1, mean)
-gene_counts_filtered_stat$sd <- apply(gene_counts_filtered, 1, sd)
-#gene_counts_filtered_stat$cv <- apply(gene_counts_filtered, 1, function(x) gene_counts_filtered_stat$mean/gene_counts_filtered_stat$sd)
-write.xlsx(gene_counts_filtered_stat, "mydata_gc.xlsx")
-####calculate sd/mean in excel, cause of memory
-gene_counts_filtered_stat2 <- read.csv2("~/LMU/Binf/gobi/Blockteil/mydata.csv", header= TRUE)
+gene_counts_filtered <- data.matrix(gene_counts[!gc_row_sums==0,])
 
-plot(x = gene_counts_filtered_stat2$mean  ,y = gene_counts_filtered_stat2$cv ,type = "p")
+gc_means <- apply(gene_counts_filtered,1,mean) 
+gc_sds <- apply(gene_counts_filtered,1,sd) 
+
+
+gc_ok <- which(gc_means > 1) 
+gc_means_ok <- gc_means[gc_ok] 
+gc_sds_ok<-gc_sds[gc_ok] 
+gc_cv <- gc_sds_ok/gc_means_ok
+plot(gc_means_ok, gc_cv) 
+plot(gc_means_ok,gc_sds_ok/gc_means_ok) 
+plot(gc_means_ok,sqrt(gc_sds_ok/gc_means_ok)) 
+gc_afit<-loess(sqrt(gc_sds_ok/gc_means_ok)~gc_means_ok) 
+gc_resids<-gc_afit$residuals
+plot(density(gc_resids)) 
+good<-which(gc_resids > 0.1) 
+
+#plots
+scatter.smooth(gc_means_ok,sqrt(gc_sds_ok/gc_means_ok), lpars =
+                 list(col = "blue", lwd = 3, lty = 2))
+points(gc_means_ok[good],sqrt(gc_sds_ok[good]/gc_means_ok[good]),col="red",pch=19) 
 
 ##unlogged
 #gene_counts_filtered_ul <- gene_counts_unlogged[!gc_row_sums==0,]
@@ -125,17 +126,10 @@ junction_counts_filtered_stat2 <- read.csv2("~/LMU/Binf/gobi/Blockteil/mydata_jc
 plot(x = junction_counts_filtered_stat2$mean  ,y = junction_counts_filtered_stat2$cv ,type = "p")
 
 
+p4 <- qplot(data = junction_counts_filtered_stat2, mean, cv, xlab = "", ylab = "",
+       geom_smooth(method = "auto", size = 1.5), theme_bw())
 
-
-# Reduce dimension with CV
-
-#gene_counts_cv <- cv(gene_counts_filtered[,])
-
-
-#junction_counts_cv <- cv(junction_counts_pca)
-
-plot(junction_counts_cv, type = "l")
-
+p4
 
 
 print("Performing PCA...")
