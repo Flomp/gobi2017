@@ -75,7 +75,7 @@ junction_counts_unlogged <- junction_counts
 gene_counts <- log(gene_counts+1)
 gc_row_sums <- rowSums(gene_counts)
 junction_counts <- log(junction_counts+1)
-#jc_row_sum <- unname(rowSums(junction_counts))
+
 
 # Reduce dimension gene_counts
 gene_counts_filtered <- gene_counts[!gc_row_sums==0,]
@@ -101,37 +101,18 @@ points(gc_means_ok[good],gc_cv[good],col="red",pch=19)
 ##unlogged
 #gene_counts_filtered_ul <- gene_counts_unlogged[!gc_row_sums==0,]
 #gene_counts_filtered_stat_ul <- gene_counts_filtered_ul
-#gene_counts_filtered_stat_ul$mean <- apply(gene_counts_filtered_ul, 1, mean)
-#gene_counts_filtered_stat_ul$sd <- apply(gene_counts_filtered_ul, 1, sd)
-#write.xlsx(gene_counts_filtered_stat_ul, "mydata_ul.xlsx")
-####calculate sd/mean in excel, cause of memory
-#gene_counts_filtered_stat2 <- read.csv2("~/LMU/Binf/gobi/Blockteil/mydata_gc.csv", header= TRUE)
 
-#gene_counts_filtered_stat2 <- read.csv2("~/LMU/Binf/gobi/Blockteil/mydata.csv", header= TRUE)
-#plot(x = gene_counts_filtered_stat2$mean  ,y = gene_counts_filtered_stat2$cv ,type = "p")
 
 ##################################
 # Reduce dimension junction_counts
 junction_counts_filtered_stat <- junction_counts
-junction_counts_filtered_stat$mean <- apply(junction_counts, 1, mean)
-junction_counts_filtered_stat$sd <- apply(junction_counts, 1, sd)
-#gene_counts_filtered_stat$cv <- apply(junction_counts, 1, function(x) junction_counts_filtered_stat$mean/junction_counts_filtered_stat$sd)
-write.xlsx(junction_counts_filtered_stat, "mydata_jc.xlsx")
-####calculate sd/mean in excel, cause of memory
-junction_counts_filtered_stat2 <- read.csv2("~/LMU/Binf/gobi/Blockteil/mydata_jc.csv", header= TRUE)
 
-plot(x = junction_counts_filtered_stat2$mean  ,y = junction_counts_filtered_stat2$cv ,type = "p")
-
-
-p4 <- qplot(data = junction_counts_filtered_stat2, mean, cv, xlab = "", ylab = "",
-       geom_smooth(method = "auto", size = 1.5), theme_bw())
-
-p4
-
+################################
+#####Reduce dimensions with PCA
 
 print("Performing PCA...")
 
-#Reduce dimensions with PCA
+
 gene_counts_filtered <- t(gene_counts_filtered)
 gene_counts_pca <- prcomp(gene_counts_filtered, center = TRUE, scale = FALSE)
 plot (gene_counts_pca, type="l")
