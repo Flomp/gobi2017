@@ -15,14 +15,9 @@ junction_count_rf <- data.frame(outcome2 = as.character(phenotype_labels[,1]), d
 outcome <- gene_count_rf$outcome
 geneModel <- randomForest(outcome~.,data=gene_count_rf, importance = TRUE, ntree=1000, replace = TRUE, do.trace = TRUE, keep.forest=TRUE)
 
-geneModel
-
 summary(geneModel)
-# Konfusionsmatrix mit OOB-Daten -> TP, TN, FP, TN
-geneModel$obb.times
-mean(geneModel$oob.times)
 
-table(gene_count_rf$outcome, geneModel$predicted)
+mean(geneModel$oob.times)
 
 # OOB-Fehlerschaetzung statt Kreuzvalidierung
 geneModel$err.rate
@@ -35,12 +30,9 @@ imp <- varImpPlot(geneModel)
 outcome2 <- junction_count_rf$outcome2
 junctionModel <- randomForest(outcome2~.,data=junction_count_rf, importance = TRUE, ntree=1000, replace = TRUE, do.trace = TRUE, keep.forest=TRUE)
 
-junctionModel
 
 summary(junctionModel)
 
-# Konfusionsmatrix mit OOB-Daten -> TP, TN, FP, TN
-junctionModel$obb.times
 mean(junctionModel$oob.times)
 
 # OOB-Fehlerschaetzung statt Kreuzvalidierung
@@ -49,13 +41,23 @@ junctionModel$err.rate
 #Variablenwichtigkeit
 imp <- varImpPlot(junctionModel)
 
+
+####Konfussionsmatrize aller Phenotypne
+print("Gen-Modell")
+print(geneModel)
+
+print("Junction-Modell")
+print(junctionModel)
+
+
+######### Accuracies
 print("Accuracy Genes:")
-#Accuarcy
-1-geneModel$err.rate
+#Accuarcy Genes
+print(1-geneModel$err.rate[1000,])
 
 print("Accuracy Junctions:")
-#Accuarcy
-1-junctionModel$err.rate
+#Accuarcy Junctions
+print(1-junctionModel$err.rate[1000,])
 
 #########Plots fuer Random Forest
 plot(1-geneModel$err.rate[,1], type="l", col="orange", main="Random Forrest", ylab="Accuracy", xlab="Anzahl Bäume")
