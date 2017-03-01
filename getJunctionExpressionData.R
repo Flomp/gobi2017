@@ -1,7 +1,9 @@
 library(rgl)
 library(stats)
-project_accession <- "SRP055569"
-pheno_keyword <- "tissue"
+library(raster)
+library(openxlsx)
+project_accession <- "SRP019994"
+pheno_keyword <- "subtypes"
 
 ##############################
 ##########Download############
@@ -66,9 +68,12 @@ phenotype_labels$char <- gsub(paste(".*", pheno_keyword, ":", sep=""), "", pheno
 phenotype_labels$char <- gsub("(,|\\)$).*", "", phenotype_labels$char)
 phenotype_labels <- transform(phenotype_labels, char = as.integer(factor(char, unique(char))))-1
 
+
 gene_counts <- log(gene_counts+1)
 gc_row_sums <- rowSums(gene_counts)
 junction_counts <- log(junction_counts+1)
+#jc_row_sum <- unname(rowSums(junction_counts))
+
 hist(gc_row_sums, breaks=seq(from=0, to=max(gc_row_sums)+20, by=1))
 abline(v = median(gc_row_sums),
        col = "red",
@@ -79,25 +84,55 @@ abline(v = mean(gc_row_sums),
 abline(v = quantile(gc_row_sums, 0.10),
        col = "blue",
        lwd = 2)
+
+
+# Reduce dimension 
+gene_counts_filtered <- gene_counts[!gc_row_sums==0,]
+#mean_df <- data.frame(matrix(nrow = nrow(gene_counts_filtered), ncol= 1))
+#sd_df <- data.frame(matrix(nrow = nrow(gene_counts_filtered), ncol= 1))
+#gene_counts_filtered_stat <- data.frame(gene_counts_filtered, mean_df, sd_df)
+gene_counts_filtered_stat <- gene_counts_filtered
+gene_counts_filtered_stat$mean <- apply(gene_counts_filtered, 1, mean)
+gene_counts_filtered_stat$sd <- apply(gene_counts_filtered, 1, sd)
+
+write.xlsx(gene_counts_filtered_stat, "mydata.xlsx")
+
+gene_counts_filtered_stat2 <- read.csv2("~/LMU/Binf/gobi/Blockteil/mydata.csv", header= TRUE)
+
+#gene_counts_filtered_stat$cv <- apply(gene_counts_filtered, 1, function(x) gene_counts_filtered_stat$mean/gene_counts_filtered_stat$sd)
+
+plot(x = gene_counts_filtered_stat2$mean  ,y = gene_counts_filtered_stat2$cv ,type = "p")
+# Reduce dimension with CV
+
+
+gene_counts_cv <- cv(gene_counts_filtered[1,])
+
+
+junction_counts_cv <- cv(junction_counts_pca)
+
+plot(junction_counts_cv, type = "l")
+
+
+
 print("Performing PCA...")
 
 #Reduce dimensions with PCA
-gene_counts_filtered <- gene_counts[!gc_row_sums==0,]
 gene_counts_filtered <- t(gene_counts_filtered)
 gene_counts_pca <- prcomp(gene_counts_filtered, center = TRUE, scale = FALSE)
 plot (gene_counts_pca, type="l")
 
-#jc_row_sum <- unname(rowSums(junction_counts))
+
 #junction_counts_filtered <- junction_counts[rowSums(junction_counts>5)>(0.2*ncol(junction_counts)),]
 junction_counts_pca <- t(junction_counts)
 junction_counts_pca <- prcomp(junction_counts_pca, center = TRUE, scale = FALSE)
+
 
 #Take random subsample
 
 #gc_pca <- gene_counts_pca$x
 #save(gc_pca, junction_counts_filtered, phenotype_labels, file = paste(project_accession, ".RData", sep = ""))
 
-print("RData generated!")
+#print("RData generated!")
 
 filename <- paste(project_accession, "_python", ".csv", sep="")
 write.csv(gene_counts_pca$x, file=paste("gc_", filename, sep=""), row.names = FALSE)
