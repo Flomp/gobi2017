@@ -1,5 +1,4 @@
 library(randomForest)
-#library(rgl)
 library(stats)
 
 ### Random-Forest gehoert zu Bagging (Datensaetze mit Bootstrap-Stichproben, weniger Overfitting, Varianzreduzierung, ohne Einteilung Training - Test)
@@ -30,7 +29,6 @@ imp <- varImpPlot(geneModel)
 outcome2 <- junction_count_rf$outcome2
 junctionModel <- randomForest(outcome2~.,data=junction_count_rf, importance = TRUE, ntree=1000, replace = TRUE, do.trace = TRUE, keep.forest=TRUE)
 
-
 summary(junctionModel)
 
 mean(junctionModel$oob.times)
@@ -41,14 +39,12 @@ junctionModel$err.rate
 #Variablenwichtigkeit
 imp <- varImpPlot(junctionModel)
 
-
 ####Konfussionsmatrize aller Phenotypne
 print("Gen-Modell")
 print(geneModel)
 
 print("Junction-Modell")
 print(junctionModel)
-
 
 ######### Accuracies
 print("Accuracy Genes:")
@@ -60,6 +56,9 @@ print("Accuracy Junctions:")
 print(1-junctionModel$err.rate[1000,])
 
 #########Plots fuer Random Forest
+png(paste(project_accession, ".png", sep = ""))
 plot(1-geneModel$err.rate[,1], type="l", col="orange", main="Random Forrest", ylab="Accuracy", xlab="Anzahl Bäume")
 lines(1-junctionModel$err.rate[,1], type="l", col="blue")
-legend("bottomright", legend=c("Genes", "Junctions"), col=c("orange", "blue"), lty=1:2, cex=0.8)
+legend("bottomright", legend=c("Genes", "Junctions"), col=c("orange", "blue"), lty=1:1, cex=0.9, title="Input Datenart", bg='aliceblue')
+dev.off()
+ 
