@@ -68,6 +68,8 @@ phenotype_labels$char <- gsub(paste(".*", pheno_keyword, ":", sep=""), "", pheno
 phenotype_labels$char <- gsub("(,|\\)$).*", "", phenotype_labels$char)
 phenotype_labels <- transform(phenotype_labels, char = as.integer(factor(char, unique(char))))-1
 
+gene_counts_unlogged <- gene_counts
+junction_counts_unlogged <- junction_counts
 
 gene_counts <- log(gene_counts+1)
 gc_row_sums <- rowSums(gene_counts)
@@ -86,29 +88,51 @@ abline(v = quantile(gc_row_sums, 0.10),
        lwd = 2)
 
 
-# Reduce dimension 
+# Reduce dimension gene_counts
 gene_counts_filtered <- gene_counts[!gc_row_sums==0,]
-#mean_df <- data.frame(matrix(nrow = nrow(gene_counts_filtered), ncol= 1))
-#sd_df <- data.frame(matrix(nrow = nrow(gene_counts_filtered), ncol= 1))
-#gene_counts_filtered_stat <- data.frame(gene_counts_filtered, mean_df, sd_df)
 gene_counts_filtered_stat <- gene_counts_filtered
 gene_counts_filtered_stat$mean <- apply(gene_counts_filtered, 1, mean)
 gene_counts_filtered_stat$sd <- apply(gene_counts_filtered, 1, sd)
-
-write.xlsx(gene_counts_filtered_stat, "mydata.xlsx")
-
+#gene_counts_filtered_stat$cv <- apply(gene_counts_filtered, 1, function(x) gene_counts_filtered_stat$mean/gene_counts_filtered_stat$sd)
+write.xlsx(gene_counts_filtered_stat, "mydata_gc.xlsx")
+####calculate sd/mean in excel, cause of memory
 gene_counts_filtered_stat2 <- read.csv2("~/LMU/Binf/gobi/Blockteil/mydata.csv", header= TRUE)
 
-#gene_counts_filtered_stat$cv <- apply(gene_counts_filtered, 1, function(x) gene_counts_filtered_stat$mean/gene_counts_filtered_stat$sd)
-
 plot(x = gene_counts_filtered_stat2$mean  ,y = gene_counts_filtered_stat2$cv ,type = "p")
+
+##unlogged
+#gene_counts_filtered_ul <- gene_counts_unlogged[!gc_row_sums==0,]
+#gene_counts_filtered_stat_ul <- gene_counts_filtered_ul
+#gene_counts_filtered_stat_ul$mean <- apply(gene_counts_filtered_ul, 1, mean)
+#gene_counts_filtered_stat_ul$sd <- apply(gene_counts_filtered_ul, 1, sd)
+#write.xlsx(gene_counts_filtered_stat_ul, "mydata_ul.xlsx")
+####calculate sd/mean in excel, cause of memory
+#gene_counts_filtered_stat2 <- read.csv2("~/LMU/Binf/gobi/Blockteil/mydata_gc.csv", header= TRUE)
+
+#gene_counts_filtered_stat2 <- read.csv2("~/LMU/Binf/gobi/Blockteil/mydata.csv", header= TRUE)
+#plot(x = gene_counts_filtered_stat2$mean  ,y = gene_counts_filtered_stat2$cv ,type = "p")
+
+##################################
+# Reduce dimension junction_counts
+junction_counts_filtered_stat <- junction_counts
+junction_counts_filtered_stat$mean <- apply(junction_counts, 1, mean)
+junction_counts_filtered_stat$sd <- apply(junction_counts, 1, sd)
+#gene_counts_filtered_stat$cv <- apply(junction_counts, 1, function(x) junction_counts_filtered_stat$mean/junction_counts_filtered_stat$sd)
+write.xlsx(junction_counts_filtered_stat, "mydata_jc.xlsx")
+####calculate sd/mean in excel, cause of memory
+junction_counts_filtered_stat2 <- read.csv2("~/LMU/Binf/gobi/Blockteil/mydata_jc.csv", header= TRUE)
+
+plot(x = junction_counts_filtered_stat2$mean  ,y = junction_counts_filtered_stat2$cv ,type = "p")
+
+
+
+
 # Reduce dimension with CV
 
+#gene_counts_cv <- cv(gene_counts_filtered[,])
 
-gene_counts_cv <- cv(gene_counts_filtered[1,])
 
-
-junction_counts_cv <- cv(junction_counts_pca)
+#junction_counts_cv <- cv(junction_counts_pca)
 
 plot(junction_counts_cv, type = "l")
 
