@@ -3,8 +3,8 @@ library(stats)
 library(raster)
 library(openxlsx)
 library(ggplot2)
-project_accession <- "SRP019994"
-pheno_keyword <- "subtypes"
+project_accession <- "SRP066834"
+pheno_keyword <- "tissue"
 
 ##############################
 ##########Download############
@@ -126,7 +126,7 @@ gene_counts_pca <- prcomp(gene_counts_filtered, center = TRUE, scale = FALSE)
 
 
 #junction_counts_filtered <- junction_counts[rowSums(junction_counts>5)>(0.2*ncol(junction_counts)),]
-junction_counts_pca <- t(junction_counts)
+junction_counts_pca <- t(junction_counts_filtered)
 junction_counts_pca <- prcomp(junction_counts_pca, center = TRUE, scale = FALSE)
 
 
