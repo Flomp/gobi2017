@@ -2,8 +2,8 @@ library(rgl)
 library(stats)
 library(raster)
 library(ggplot2)
-project_accession <- "SRP055569"
-pheno_keyword <- "cell type"
+project_accession <- "SRP057500"
+pheno_keyword <- "cancer type"
 
 ##############################
 ##########Download############
