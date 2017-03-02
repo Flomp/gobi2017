@@ -6,9 +6,9 @@ library(stats)
 # Greedy-Algo
 # am besten RF mehrfach ausfuehren
 
-gene_count_rf <- data.frame(outcome = as.character(phenotype_labels[,1]), data.matrix(gc_pca))
+gene_count_rf <- data.frame(outcome = as.character(phenotype_labels[,1]), data.matrix(g_counts_pca))
 #junction_count_rf <- data.frame(outcome2 = as.character(phenotype_labels[,1]), t(data.matrix(junction_counts_filtered)))
-junction_count_rf <- data.frame(outcome2 = as.character(phenotype_labels[,1]), data.matrix(jxt_pca))
+junction_count_rf <- data.frame(outcome2 = as.character(phenotype_labels[,1]), data.matrix(j_counts_pca))
 
 ####### RF fuer Genes
 outcome <- gene_count_rf$outcome
