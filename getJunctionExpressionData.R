@@ -2,6 +2,10 @@ library(rgl)
 library(stats)
 library(raster)
 library(ggplot2)
+library(devtools)
+install_github("ggbiplot", "vqv")
+library(ggbiplot)
+
 project_accession <- "SRP057500"
 pheno_keyword <- "cancer type"
 
