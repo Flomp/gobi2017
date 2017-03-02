@@ -129,6 +129,8 @@ gene_counts_pca <- prcomp(gene_counts_filtered, center = TRUE, scale = FALSE)
 junction_counts_pca <- t(junction_counts_filtered)
 junction_counts_pca <- prcomp(junction_counts_pca, center = TRUE, scale = FALSE)
 
-
+###für Random Forest benötigt
+g_counts_pca <- gene_counts_pca$x
+j_counts_pca <- junction_counts_pca$x
 
 
