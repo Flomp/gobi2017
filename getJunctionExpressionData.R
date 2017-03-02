@@ -1,10 +1,9 @@
 library(rgl)
 library(stats)
 library(raster)
-library(openxlsx)
 library(ggplot2)
-project_accession <- "SRP066834"
-pheno_keyword <- "tissue"
+project_accession <- "SRP055569"
+pheno_keyword <- "cell type"
 
 ##############################
 ##########Download############
@@ -14,8 +13,8 @@ if(!dir.exists(project_accession)){
 }
 setwd(project_accession)
 url<-"http://duffel.rail.bio/recount"
-###Gene Counts
 
+###Gene Counts
 filename <- "counts_gene.tsv.gz"
 if(!file.exists(filename)){
   download.file(paste(url, project_accession, filename, sep="/"), filename, "wget", 
@@ -95,8 +94,8 @@ Filter<-function(dat, threshhold){
   dat <- dat[good,]
   
   #plots
-  points(gc_means_ok[good],gc_cv[good],col="red",pch=19) 
   scatter.smooth(gc_means_ok,gc_cv, lpars = list(col = "blue", lwd = 3, lty = 2))
+  points(gc_means_ok[good],gc_cv[good],col="red",pch=19) 
   return (dat)
 }
 
@@ -129,8 +128,6 @@ gene_counts_pca <- prcomp(gene_counts_filtered, center = TRUE, scale = FALSE)
 junction_counts_pca <- t(junction_counts_filtered)
 junction_counts_pca <- prcomp(junction_counts_pca, center = TRUE, scale = FALSE)
 
-###für Random Forest benötigt
-g_counts_pca <- gene_counts_pca$x
-j_counts_pca <- junction_counts_pca$x
+
 
 
