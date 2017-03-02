@@ -13,7 +13,7 @@ if(!dir.exists(project_accession)){
 }
 setwd(project_accession)
 url<-"http://duffel.rail.bio/recount"
-
+  
 ###Gene Counts
 filename <- "counts_gene.tsv.gz"
 if(!file.exists(filename)){
@@ -90,7 +90,7 @@ Filter<-function(dat, threshhold){
   gc_afit<-loess(gc_cv~gc_means_ok) 
   gc_resids<-gc_afit$residuals
   plot(density(gc_resids))
-  good<-which(gc_resids >= quantile(gc_resids,0.95) | gc_resids <= -1*quantile(gc_resids,0.95 )) 
+  good<-which(gc_resids >= quantile(gc_resids,0.90)) 
   dat <- dat[good,]
   
   #plots
