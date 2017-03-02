@@ -83,25 +83,27 @@ gc_row_sums <- rowSums(gene_counts)
 # Reduce dimension gene_counts
 gene_counts_filtered <- gene_counts[!gc_row_sums==0,]
 
-gene_counts_filtered_healthy <- gene_counts_filtered[,phenotype_labels$char == 0]
-gene_counts_filtered_unhealthy <- gene_counts_filtered[,phenotype_labels$char == 1]
+Filter2<-function(dat, threshold){
+  gene_counts_filtered_healthy <- dat[,phenotype_labels$char == 0]
+  gene_counts_filtered_unhealthy <- dat[,phenotype_labels$char == 1]
+  
+  gc_healthy_means <- apply(gene_counts_filtered_healthy, 1, mean)
+  gc_unhealthy_means <-  apply(gene_counts_filtered_unhealthy, 1, mean)
+  
+  log_fold <- log(((gc_unhealthy_means)+1)/((gc_healthy_means)+1))
+  
+  gc_means <- apply(gene_counts_filtered,1,mean) 
+  gc_sds <- apply(gene_counts_filtered,1,sd) 
+  gc_cv <- gc_sds/gc_means
+  
+  scatter.smooth(log_fold,gc_cv, lpars = list(col = "blue", lwd = 3, lty = 2))
+  good <- which(log_fold>threshold | log_fold< -threshold)
+  points(log_fold[good], gc_cv[good], col="red")
+  
+  return (dat[good,])
+}
 
-
-gc_healthy_means <- apply(gene_counts_filtered_healthy, 1, mean)
-gc_unhealthy_means <-  apply(gene_counts_filtered_unhealthy, 1, mean)
-
-
-log_fold <- log(((gc_unhealthy_means)+1)/((gc_healthy_means)+1))
-
-gc_means <- apply(gene_counts_filtered,1,mean) 
-gc_sds <- apply(gene_counts_filtered,1,sd) 
-gc_cv <- gc_sds/gc_means
-
-#plot(log_fold,gc_cv,type ="p")
-scatter.smooth(log_fold,gc_cv, lpars = list(col = "blue", lwd = 3, lty = 2))
-
-gene_counts <- log(gene_counts+1)
-junction_counts <- log(junction_counts+1)
+gene_counts_filtered <- Filter2(gene_counts_filtered,2)
 
 Filter<-function(dat, threshhold){
   gc_means <- apply(dat,1,mean) 
@@ -124,6 +126,9 @@ Filter<-function(dat, threshhold){
   points(gc_means_ok[good],gc_cv[good],col="red",pch=19) 
   return (dat)
 }
+
+gene_counts <- log(gene_counts+1)
+junction_counts <- log(junction_counts+1)
 
 gene_counts_filtered <- Filter(gene_counts_filtered, 1)
 junction_counts_filtered <- Filter(junction_counts, 0.1)
