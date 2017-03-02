@@ -66,7 +66,11 @@ rownames(phenotype_labels) <- phenotype$run
 phenotype_labels$char <- tolower(phenotype_labels$char)
 phenotype_labels$char <- gsub(paste(".*", pheno_keyword, ":", sep=""), "", phenotype_labels$char)
 phenotype_labels$char <- gsub("(,|\\)$).*", "", phenotype_labels$char)
+
+####### Für Binär: Transformation auskommentieren
+####### Für 7 Kategorien: ifelse auskommmentieren
 phenotype_labels <- transform(phenotype_labels, char = as.integer(factor(char, unique(char))))-1
+#phenotype_labels$char <- ifelse(grepl('hc',phenotype_labels$char),phenotype_labels$char <- 0, phenotype_labels$char <- 1)
 
 gene_counts_unlogged <- gene_counts
 junction_counts_unlogged <- junction_counts
