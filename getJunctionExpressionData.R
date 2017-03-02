@@ -69,19 +69,40 @@ phenotype_labels$char <- gsub("(,|\\)$).*", "", phenotype_labels$char)
 
 ####### Für Binär: Transformation auskommentieren
 ####### Für 7 Kategorien: ifelse auskommmentieren
-phenotype_labels <- transform(phenotype_labels, char = as.integer(factor(char, unique(char))))-1
-#phenotype_labels$char <- ifelse(grepl('hc',phenotype_labels$char),phenotype_labels$char <- 0, phenotype_labels$char <- 1)
+#phenotype_labels <- transform(phenotype_labels, char = as.integer(factor(char, unique(char))))-1
+phenotype_labels$char <- ifelse(grepl('hc',phenotype_labels$char),phenotype_labels$char <- 0, phenotype_labels$char <- 1)
 
 gene_counts_unlogged <- gene_counts
 junction_counts_unlogged <- junction_counts
 
-gene_counts <- log(gene_counts+1)
+
 gc_row_sums <- rowSums(gene_counts)
-junction_counts <- log(junction_counts+1)
+
 
 
 # Reduce dimension gene_counts
 gene_counts_filtered <- gene_counts[!gc_row_sums==0,]
+
+gene_counts_filtered_healthy <- gene_counts_filtered[,phenotype_labels$char == 0]
+gene_counts_filtered_unhealthy <- gene_counts_filtered[,phenotype_labels$char == 1]
+
+
+gc_healthy_means <- apply(gene_counts_filtered_healthy, 1, mean)
+gc_unhealthy_means <-  apply(gene_counts_filtered_unhealthy, 1, mean)
+
+
+log_fold <- log(((gc_unhealthy_means)+1)/((gc_healthy_means)+1))
+
+gc_means <- apply(gene_counts_filtered,1,mean) 
+gc_sds <- apply(gene_counts_filtered,1,sd) 
+gc_cv <- gc_sds/gc_means
+
+#plot(log_fold,gc_cv,type ="p")
+scatter.smooth(log_fold,gc_cv, lpars = list(col = "blue", lwd = 3, lty = 2))
+
+gene_counts <- log(gene_counts+1)
+junction_counts <- log(junction_counts+1)
+
 Filter<-function(dat, threshhold){
   gc_means <- apply(dat,1,mean) 
   gc_sds <- apply(dat,1,sd) 
@@ -91,6 +112,7 @@ Filter<-function(dat, threshhold){
   gc_means_ok <- gc_means[gc_ok] 
   gc_sds_ok<-gc_sds[gc_ok] 
   gc_cv <- sqrt(gc_sds_ok/gc_means_ok)
+  
   gc_afit<-loess(gc_cv~gc_means_ok) 
   gc_resids<-gc_afit$residuals
   plot(density(gc_resids))
@@ -132,6 +154,25 @@ gene_counts_pca <- prcomp(gene_counts_filtered, center = TRUE, scale = FALSE)
 junction_counts_pca <- t(junction_counts_filtered)
 junction_counts_pca <- prcomp(junction_counts_pca, center = TRUE, scale = FALSE)
 
+###benötigte Komponenten für Random Forest
+g_counts_pca <- gene_counts_pca$x
+j_counts_pca <- junction_counts_pca$x
 
+###Plots für 2 PCA Komponenten für Gene und Junctions
+png("PCA_Gene.png")
+gc_plot <- ggbiplot(gene_counts_pca, choices = 1:2, obs.scale = 1, var.scale = 1, groups = as.factor(phenotype_labels$char), ellipse = TRUE, 
+              circle = FALSE, arrow = 0.0,  labels = NULL,labels.size = 0, var.axes = FALSE)
+gc_plot <- gc_plot + labs(color=("Patientengruppen"))
+gc_plot <- gc_plot + ggtitle("PCA Component Plot (Gene)")
+gc_plot <- gc_plot + theme(legend.direction = 'vertical', legend.position = 'right')
+print(gc_plot)
+dev.off()
 
-
+png("PCA_Junctions.png")
+jc_plot <- ggbiplot(junction_counts_pca, choices = 1:2, obs.scale = 1, var.scale = 1, groups = as.factor(phenotype_labels$char), ellipse = TRUE, 
+                    circle = FALSE, arrow = 0.0,  labels = NULL,labels.size = 0, var.axes = FALSE)
+jc_plot <- jc_plot + labs(color=("Patientengruppen"))
+jc_plot <- jc_plot + ggtitle("PCA Component Plot (Junctions)")
+jc_plot <- jc_plot + theme(legend.direction = 'vertical', legend.position = 'right')
+print(jc_plot)
+dev.off()
