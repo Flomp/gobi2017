@@ -121,7 +121,7 @@ FilterByExpression<-function(dat, threshold, percentage){
   return(filtered)
 }
 
-FilterRandom<function(dat, samplesize){
+FilterRandom<-function(dat, samplesize){
   filtered <- dat[sample(nrow(dat), samplesize), ]
 }
 
