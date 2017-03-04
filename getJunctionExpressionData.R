@@ -2,6 +2,9 @@ library(rgl)
 library(stats)
 library(raster)
 library(ggplot2)
+library(devtools)
+library(ggbiplot)
+
 project_accession <- "SRP057500"
 pheno_keyword <- "cancer type"
 
@@ -137,20 +140,20 @@ write.csv(phenotype_labels$char, file=paste("labels_", filename, sep=""), row.na
 # Reduce dimensions with PCA ----
 print("Performing PCA...")
 
-gene_counts <- log(gene_counts+1)
-junction_counts <- log(junction_counts+1)
+gene_counts_filtered <- log(gene_counts_filtered+1)
+junction_counts_filtered <- log(junction_counts_filtered+1)
 
 gene_counts_filtered <- t(gene_counts_filtered)
 gene_counts_pca <- prcomp(gene_counts_filtered, center = TRUE, scale = FALSE)
 
-junction_counts_pca <- t(junction_counts_filtered)
-junction_counts_pca <- prcomp(junction_counts_pca, center = TRUE, scale = FALSE)
+junction_counts_filtered <- t(junction_counts_filtered)
+junction_counts_pca <- prcomp(junction_counts_filtered, center = TRUE, scale = FALSE)
 
 eigen_gc <- gene_counts_pca$x
 eigen_jc <- junction_counts_pca$x
 
 # PCA plots ----
-png("PCA_Gene.png")
+png("PCA_Gene5.png")
 gc_plot <- ggbiplot(gene_counts_pca, choices = 1:2, obs.scale = 1, var.scale = 1, groups = as.factor(phenotype_labels$char), ellipse = TRUE, 
               circle = FALSE, arrow = 0.0,  labels = NULL,labels.size = 0, var.axes = FALSE)
 gc_plot <- gc_plot + labs(color=("Patientengruppen"))
@@ -159,7 +162,7 @@ gc_plot <- gc_plot + theme(legend.direction = 'vertical', legend.position = 'rig
 print(gc_plot)
 dev.off()
 
-png("PCA_Junctions.png")
+png("PCA_Junctions5.png")
 jc_plot <- ggbiplot(junction_counts_pca, choices = 1:2, obs.scale = 1, var.scale = 1, groups = as.factor(phenotype_labels$char), ellipse = TRUE, 
                     circle = FALSE, arrow = 0.0,  labels = NULL,labels.size = 0, var.axes = FALSE)
 jc_plot <- jc_plot + labs(color=("Patientengruppen"))

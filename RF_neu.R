@@ -6,20 +6,15 @@ library(stats)
 # Greedy-Algo
 # am besten RF mehrfach ausfuehren
 
-gene_count_rf <- data.frame(outcome = as.character(phenotype_labels[,1]), data.matrix(g_counts_pca))
+gene_count_rf <- data.frame(outcome = as.character(phenotype_labels[,1]), data.matrix(eigen_gc))
 #junction_count_rf <- data.frame(outcome2 = as.character(phenotype_labels[,1]), t(data.matrix(junction_counts_filtered)))
-junction_count_rf <- data.frame(outcome2 = as.character(phenotype_labels[,1]), data.matrix(j_counts_pca))
+junction_count_rf <- data.frame(outcome2 = as.character(phenotype_labels[,1]), data.matrix(eigen_jc))
 
 ####### RF fuer Genes
 outcome <- gene_count_rf$outcome
 geneModel <- randomForest(outcome~.,data=gene_count_rf, importance = TRUE, ntree=1000, replace = TRUE, do.trace = TRUE, keep.forest=TRUE)
 
 summary(geneModel)
-
-mean(geneModel$oob.times)
-
-# OOB-Fehlerschaetzung statt Kreuzvalidierung
-geneModel$err.rate
 
 #Variablenwichtigkeit
 imp <- varImpPlot(geneModel)
@@ -31,15 +26,10 @@ junctionModel <- randomForest(outcome2~.,data=junction_count_rf, importance = TR
 
 summary(junctionModel)
 
-mean(junctionModel$oob.times)
-
-# OOB-Fehlerschaetzung statt Kreuzvalidierung
-junctionModel$err.rate
-
 #Variablenwichtigkeit
 imp <- varImpPlot(junctionModel)
 
-####Konfussionsmatrize aller Phenotypne
+######### Konfussionsmatrize aller Phenotypne
 print("Gen-Modell")
 print(geneModel)
 
@@ -56,7 +46,7 @@ print("Accuracy Junctions:")
 print(1-junctionModel$err.rate[1000,])
 
 #########Plots fuer Random Forest
-png(paste(project_accession, ".png", sep = ""))
+png(paste(project_accession, "_RF5.png", sep = ""))
 plot(1-geneModel$err.rate[,1], type="l", col="orange", main="Random Forrest", ylab="Accuracy", xlab="Anzahl Bäume", ylim=range(1-geneModel$err.rate[,1],1-junctionModel$err.rate[,1]))
 lines(1-junctionModel$err.rate[,1], type="l", col="blue")
 legend("bottomright", legend=c("Genes", "Junctions"), col=c("orange", "blue"), lty=1:1, cex=0.9, title="Input Datenart", bg='aliceblue')
