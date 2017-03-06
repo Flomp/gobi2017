@@ -124,11 +124,27 @@ FilterByExpression<-function(dat, threshold, percentage){
 FilterRandom<-function(dat, samplesize){
   filtered <- dat[sample(nrow(dat), samplesize), ]
 }
-
+#Parameters for the different variations of choosing good Data
 print("Filtering features...")
-gene_counts_filtered <- FilterByLogFold(gene_counts,2)
-junction_counts_filtered <- FilterByLogFold(junction_counts, 2)
 
+#1.Try: Random sampling
+gene_counts_filtered <- FilterRandom(gene_counts,2000)
+junction_counts_filtered <- FilterRandom(gene_counts,2000)
+
+#2.Try: Feature selection
+#gene_counts_filtered <- FilterRandom(gene_counts,2000)
+#junction_counts_filtered <- FilterByExpression(junction_counts, 5, 0.2)
+
+#3.Try: Variance
+#not done
+
+#4.Try: Coefficient of variation vs. Mean
+#gene_counts_filtered <- FilterByVariance(gene_counts,1)
+#junction_counts_filtered <- FilterByVariance(junction_counts, 0.1)
+
+#5.Try: LogFold
+#gene_counts_filtered <- FilterByLogFold(gene_counts,2)
+#junction_counts_filtered <- FilterByLogFold(junction_counts, 2)
 
 # Write data for deep net ----
 filename <- paste(project_accession, "_python", ".csv", sep="")
@@ -153,7 +169,7 @@ eigen_gc <- gene_counts_pca$x
 eigen_jc <- junction_counts_pca$x
 
 # PCA plots ----
-png("PCA_Gene5.png")
+png("PCA_Gene.png")
 gc_plot <- ggbiplot(gene_counts_pca, choices = 1:2, obs.scale = 1, var.scale = 1, groups = as.factor(phenotype_labels$char), ellipse = TRUE, 
               circle = FALSE, arrow = 0.0,  labels = NULL,labels.size = 0, var.axes = FALSE)
 gc_plot <- gc_plot + labs(color=("Patientengruppen"))
@@ -162,7 +178,7 @@ gc_plot <- gc_plot + theme(legend.direction = 'vertical', legend.position = 'rig
 print(gc_plot)
 dev.off()
 
-png("PCA_Junctions5.png")
+png("PCA_Junctions.png")
 jc_plot <- ggbiplot(junction_counts_pca, choices = 1:2, obs.scale = 1, var.scale = 1, groups = as.factor(phenotype_labels$char), ellipse = TRUE, 
                     circle = FALSE, arrow = 0.0,  labels = NULL,labels.size = 0, var.axes = FALSE)
 jc_plot <- jc_plot + labs(color=("Patientengruppen"))
