@@ -4,6 +4,7 @@ library(raster)
 library(ggplot2)
 library(devtools)
 library(ggbiplot)
+library(randomForest)
 
 project_accession <- "SRP057500"
 pheno_keyword <- "cancer type"
@@ -66,11 +67,10 @@ phenotype_labels$char <- tolower(phenotype_labels$char)
 phenotype_labels$char <- gsub(paste(".*", pheno_keyword, ":", sep=""), "", phenotype_labels$char)
 phenotype_labels$char <- gsub("(,|\\)$).*", "", phenotype_labels$char)
 
-####### Für Binär: Transformation auskommentieren
-####### Für 7 Kategorien: ifelse auskommmentieren
+####### for binary classification: comment line with transform-function out (0: healthy, 1: cancer)
+####### for 7 categories: comment line with ifelse-function out 
 #phenotype_labels <- transform(phenotype_labels, char = as.integer(factor(char, unique(char))))-1
 phenotype_labels$char <- ifelse(grepl('hc',phenotype_labels$char),phenotype_labels$char <- 0, phenotype_labels$char <- 1)
-
 
 # Filter counts ----
 FilterByLogFold<-function(dat, threshold){
@@ -127,7 +127,7 @@ FilterRandom<-function(dat, samplesize){
 #Parameters for the different variations of choosing good Data
 print("Filtering features...")
 
-#1.Try: Random sampling
+#1. Try: Random sampling
 gene_counts_filtered <- FilterRandom(gene_counts,2000)
 junction_counts_filtered <- FilterRandom(gene_counts,2000)
 
@@ -168,6 +168,10 @@ junction_counts_pca <- prcomp(junction_counts_filtered, center = TRUE, scale = F
 eigen_gc <- gene_counts_pca$x
 eigen_jc <- junction_counts_pca$x
 
+plot(gene_counts_pca, type='l')
+plot(junction_counts_pca, type ='l')
+summary(junction_counts_pca)
+
 # PCA plots ----
 png("PCA_Gene.png")
 gc_plot <- ggbiplot(gene_counts_pca, choices = 1:2, obs.scale = 1, var.scale = 1, groups = as.factor(phenotype_labels$char), ellipse = TRUE, 
@@ -184,8 +188,38 @@ jc_plot <- ggbiplot(junction_counts_pca, choices = 1:2, obs.scale = 1, var.scale
 jc_plot <- jc_plot + labs(color=("Patientengruppen"))
 jc_plot <- jc_plot + ggtitle("PCA Component Plot (Junctions)")
 jc_plot <- jc_plot + theme(legend.direction = 'vertical', legend.position = 'right')
-print(jc_plot)
+print(jc_plot) 
 dev.off()
 
+
+### Random-Forest for Gene- & Junction Counts
+gene_count_rf <- data.frame(outcome = as.character(phenotype_labels[,1]), data.matrix(eigen_gc))
+junction_count_rf <- data.frame(outcome2 = as.character(phenotype_labels[,1]), data.matrix(eigen_jc))
+
+# RF for Genes
+outcome <- gene_count_rf$outcome
+geneModel <- randomForest(outcome~.,data=gene_count_rf, importance = TRUE, ntree=1000, replace = TRUE, do.trace = TRUE, keep.forest=TRUE)
+summary(geneModel)
+
+# RF for Junctions
+outcome2 <- junction_count_rf$outcome2
+junctionModel <- randomForest(outcome2~.,data=junction_count_rf, importance = TRUE, ntree=1000, replace = TRUE, do.trace = TRUE, keep.forest=TRUE)
+summary(junctionModel)
+
+# Confusionmatrix and Error-Rate for all Phenotypes
+print("Gen-Modell")
+print(geneModel)
+plot (geneModel)
+
+print("Junction-Modell")
+print(junctionModel)
+plot(junctionModel)
+
+#Plot for Random Forest
+png(paste(project_accession, "_RF.png", sep = ""))
+plot(1-geneModel$err.rate[,1], type="l", col="orange", main="Random Forrest", ylab="Accuracy", xlab="Anzahl Bäume", ylim=range(1-geneModel$err.rate[,1],1-junctionModel$err.rate[,1]), sub= "\n  Datenauswahl-Kriterium", cex.sub = 1, font.sub = 2)
+lines(1-junctionModel$err.rate[,1], type="l", col="blue")
+legend("bottomright", legend=c("Genes", "Junctions"), col=c("orange", "blue"), lty=1:1, cex=0.9, title="Input Datenart", bg='aliceblue')
+dev.off()
 
 print("Fi")
