@@ -131,7 +131,7 @@ print("Filtering features...")
 gene_counts_filtered <- FilterRandom(gene_counts,2000)
 junction_counts_filtered <- FilterRandom(gene_counts,2000)
 
-#2.Try: Feature selection
+#2.Try: Feature Selection by Expression 
 #gene_counts_filtered <- FilterRandom(gene_counts,2000)
 #junction_counts_filtered <- FilterByExpression(junction_counts, 5, 0.2)
 
