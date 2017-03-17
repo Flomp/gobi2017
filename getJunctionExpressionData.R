@@ -15,7 +15,7 @@ if(!dir.exists(project_accession)){
 }
 setwd(project_accession)
 url<-"http://duffel.rail.bio/recount"
-  
+
 # Gene Counts
 filename <- "counts_gene.tsv.gz"
 if(!file.exists(filename)){
@@ -29,7 +29,7 @@ gene_counts <- read.table(file =filename, sep = '\t', header = TRUE)
 filename <- "counts_jx.tsv.gz"
 if(!file.exists(filename)){
   download.file(paste(url, project_accession, filename, sep="/"), filename, "wget", 
-              quiet = FALSE, mode = "w", cacheOK = TRUE)
+                quiet = FALSE, mode = "w", cacheOK = TRUE)
 }
 junction_counts <- read.table(file = filename, sep = '\t', header = TRUE)
 
@@ -37,7 +37,7 @@ junction_counts <- read.table(file = filename, sep = '\t', header = TRUE)
 filename <- paste(project_accession, "tsv", sep=".")
 if(!file.exists(filename)){
   download.file(paste(url, project_accession, filename, sep="/"), filename, "wget", 
-              quiet = FALSE, mode = "w", cacheOK = TRUE)
+                quiet = FALSE, mode = "w", cacheOK = TRUE)
 }
 phenotype <- read.table(file = filename, sep = '\t', header = TRUE)
 phenotype <- phenotype[!phenotype$reads_downloaded==0,]
@@ -47,12 +47,12 @@ phenotype <- phenotype[!is.na(phenotype$auc),]
 filename <- paste(project_accession, "junction_id_with_transcripts.bed.gz", sep=".")
 if(!file.exists(filename)){
   download.file(paste(url, project_accession, filename, sep="/"), filename, "wget", 
-              quiet = FALSE, mode = "w", cacheOK = TRUE)
+                quiet = FALSE, mode = "w", cacheOK = TRUE)
 }
 junction_positions <-read.table(file = filename, sep = '\t', header = FALSE)
 
 stopifnot(ncol(gene_counts)==ncol(junction_counts) && ncol(gene_counts) == nrow(phenotype)&&
-          nrow(junction_counts)==nrow(junction_positions))
+            nrow(junction_counts)==nrow(junction_positions))
 
 print("Download successfully completed!")
 
@@ -87,37 +87,41 @@ FilterByLogFold<-function(dat, threshold){
   sds <- apply(filtered,1,sd) 
   cv <- sds/means
   
-  scatter.smooth(log_fold,cv, lpars = list(col = "blue", lwd = 3, lty = 2))
+  plot(log_fold,cv,xlab="Log Fold", ylab="Variationskoeffizient",main="Log Fold\nGene-Counts", cex=0.8)
   good <- which(log_fold>threshold | log_fold< -threshold)
-  points(log_fold[good], cv[good], col="red")
+  points(log_fold[good], cv[good], col="red", pch=19, cex=0.8)
+  abline(v=2, lwd=2, lty=2)
+  abline(v=-2, lwd=2, lty=2)
   
   return (filtered[good,])
 }
 
 FilterByVariance<-function(dat, threshold){
   filtered <- dat[rowSums(dat)!=0,]
-  means <- apply(filtered,1,mean) 
-  sds <- apply(filtered,1,sd) 
+  means <- apply(filtered,1,mean)
   ok <- means>threshold
   filtered <- filtered[ok,]
 
   means <- means[ok] 
-  sds<- sds[ok] 
+  sds <- apply(filtered,1,sd)
   cv <- sqrt(sds/means)
   
   afit<-loess(cv~means) 
   resids<-afit$residuals
   plot(density(resids))
   good<-which(resids >= quantile(resids,0.90)) 
-
+  
   #plots
-  scatter.smooth(means,cv, lpars = list(col = "blue", lwd = 3, lty = 2))
-  points(means[good],cv[good],col="red",pch=19) 
-  return (filtered[good,])
+  plot(cv~means, cex=0.8, xlab="Mittelwert", ylab = "Variationskoeffizient", main="Variationskoeffizient\nGene-Counts")
+  lines(cbind(sort(means), predict(afit, newdata = sort(means))), 
+        col="blue",lwd=3)
+  points(means[good],cv[good],col="red",pch=19, cex=0.8) 
+  return(filtered[good,])
 }
 
+
 FilterByExpression<-function(dat, threshold, percentage){
-  filtered <- dat[rowSums(dat>threshold)>(percentage*ncol(junction_counts)),]
+  filtered <- dat[rowSums(dat>threshold)>(percentage*ncol(dat)),]
   return(filtered)
 }
 
@@ -175,7 +179,7 @@ summary(junction_counts_pca)
 # PCA plots ----
 png("PCA_Gene.png")
 gc_plot <- ggbiplot(gene_counts_pca, choices = 1:2, obs.scale = 1, var.scale = 1, groups = as.factor(phenotype_labels$char), ellipse = TRUE, 
-              circle = FALSE, arrow = 0.0,  labels = NULL,labels.size = 0, var.axes = FALSE)
+                    circle = FALSE, arrow = 0.0,  labels = NULL,labels.size = 0, var.axes = FALSE)
 gc_plot <- gc_plot + labs(color=("Patientengruppen"))
 gc_plot <- gc_plot + ggtitle("PCA Component Plot (Gene)")
 gc_plot <- gc_plot + theme(legend.direction = 'vertical', legend.position = 'right')
