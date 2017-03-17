@@ -143,8 +143,8 @@ junction_counts_filtered <- FilterRandom(gene_counts,2000)
 #not done
 
 #4.Try: Coefficient of variation vs. Mean
-#gene_counts_filtered <- FilterByVariance(gene_counts,1)
-#junction_counts_filtered <- FilterByVariance(junction_counts, 0.1)
+#gene_counts_filtered <- FilterByVariance(log(gene_counts+1),1)
+#junction_counts_filtered <- FilterByVariance(log(junction_counts+1), 0.1)
 
 #5.Try: LogFold
 #gene_counts_filtered <- FilterByLogFold(gene_counts,2)
