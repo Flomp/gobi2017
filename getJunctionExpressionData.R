@@ -220,7 +220,7 @@ plot(junctionModel)
 
 #Plot for Random Forest
 png(paste(project_accession, "_RF.png", sep = ""))
-plot(1-geneModel$err.rate[,1], type="l", col="orange", main="Random Forrest", ylab="Accuracy", xlab="Anzahl Bäume", ylim=ylim=c(0.65,0.90), sub= "\n  Datenauswahl-Kriterium", cex.sub = 1, font.sub = 2)
+plot(1-geneModel$err.rate[,1], type="l", col="orange", main="Random Forest", ylab="Accuracy", xlab="Anzahl Bäume", ylim=ylim=c(0.65,0.90), sub= "\n  Datenauswahl-Kriterium", cex.sub = 1, font.sub = 2)
 lines(1-junctionModel$err.rate[,1], type="l", col="blue")
 legend("bottomright", legend=c("Genes", "Junctions"), col=c("orange", "blue"), lty=1:1, cex=0.9, title="Input Datenart", bg='aliceblue')
 dev.off()
