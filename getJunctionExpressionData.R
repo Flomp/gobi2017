@@ -90,8 +90,8 @@ FilterByLogFold<-function(dat, threshold){
   plot(log_fold,cv,xlab="Log Fold", ylab="Variationskoeffizient",main="Log Fold\nGene-Counts", cex=0.8)
   good <- which(log_fold>threshold | log_fold< -threshold)
   points(log_fold[good], cv[good], col="red", pch=19, cex=0.8)
-  abline(v=2, lwd=2, lty=2)
-  abline(v=-2, lwd=2, lty=2)
+  abline(v=threshold, lwd=2, lty=2)
+  abline(v=-threshold, lwd=2, lty=2)
   
   return (filtered[good,])
 }
@@ -133,17 +133,20 @@ print("Filtering features...")
 
 #1. Try: Random sampling
 gene_counts_filtered <- FilterRandom(gene_counts,2000)
-junction_counts_filtered <- FilterRandom(gene_counts,2000)
+junction_counts_filtered <- FilterRandom(junction_counts,2000)
 
 #2.Try: Feature Selection by Expression 
 #gene_counts_filtered <- FilterRandom(gene_counts,2000)
 #junction_counts_filtered <- FilterByExpression(junction_counts, 5, 0.2)
 
-#3.Try: Coefficient of variation vs. Mean
+#3.Try: Variance
+#not done
+
+#4.Try: Coefficient of variation vs. Mean
 #gene_counts_filtered <- FilterByVariance(log(gene_counts+1),1)
 #junction_counts_filtered <- FilterByVariance(log(junction_counts+1), 0.1)
 
-#4.Try: LogFold
+#5.Try: LogFold
 #gene_counts_filtered <- FilterByLogFold(gene_counts,2)
 #junction_counts_filtered <- FilterByLogFold(junction_counts, 2)
 
@@ -220,7 +223,7 @@ plot(junctionModel)
 
 #Plot for Random Forest
 png(paste(project_accession, "_RF.png", sep = ""))
-plot(1-geneModel$err.rate[,1], type="l", col="orange", main="Random Forest", ylab="Accuracy", xlab="Anzahl Bäume", ylim=ylim=c(0.65,0.90), sub= "\n  Datenauswahl-Kriterium", cex.sub = 1, font.sub = 2)
+plot(1-geneModel$err.rate[,1], type="l", col="orange", main="Random Forrest", ylab="Accuracy", xlab="Anzahl Bäume", ylim=ylim=c(0.65,0.90), sub= "\n  Datenauswahl-Kriterium", cex.sub = 1, font.sub = 2)
 lines(1-junctionModel$err.rate[,1], type="l", col="blue")
 legend("bottomright", legend=c("Genes", "Junctions"), col=c("orange", "blue"), lty=1:1, cex=0.9, title="Input Datenart", bg='aliceblue')
 dev.off()
